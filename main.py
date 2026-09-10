@@ -148,8 +148,67 @@ st.plotly_chart(fig2, use_container_width=True)
 st.markdown("**이 그래프로 알 수 있는 것:** 이 기간 동안 일관객 합계가 가장 큰 5편의 날짜별 관객 수 변화와 흥행 추이를 비교할 수 있습니다.")
 
 # -----------------------------
-# 그래프 3 이후 추가 영역
+# 그래프 3: 날짜별 10위권 일관객 합계
 # -----------------------------
 st.divider()
-st.header("3. 다음 그래프")
+st.header("3. 날짜별 10위권 일관객 합계")
+
+daily_top10 = (
+    df.groupby("날짜", as_index=False)["일관객"]
+    .sum()
+    .sort_values("날짜")
+)
+
+# 일관객 합계가 가장 큰 날 3일
+top3_days = (
+    daily_top10
+    .nlargest(3, "일관객")
+    .sort_values("날짜")
+)
+
+fig3 = px.area(
+    daily_top10,
+    x="날짜",
+    y="일관객",
+    title="날짜별 박스오피스 10위권 일관객 합계",
+    labels={
+        "날짜": "날짜",
+        "일관객": "10위권 일관객 합계"
+    },
+    hover_data={
+        "날짜": "|%Y-%m-%d",
+        "일관객": ":,"
+    }
+)
+
+# 상위 3일을 그래프 위에 표시
+for _, row in top3_days.iterrows():
+    fig3.add_annotation(
+        x=row["날짜"],
+        y=row["일관객"],
+        text=row["날짜"].strftime("%Y-%m-%d"),
+        showarrow=True,
+        arrowhead=2,
+        yshift=10
+    )
+
+fig3.update_traces(
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>10위권 일관객 합계: %{y:,}명<extra></extra>"
+)
+
+fig3.update_layout(
+    hovermode="x unified",
+    xaxis_title="날짜",
+    yaxis_title="10위권 일관객 합계(명)"
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.markdown("**이 그래프로 알 수 있는 것:** 날짜별 박스오피스 10위권 영화들의 전체 일관객 규모와 관객이 가장 많이 몰린 날을 알 수 있습니다.")
+
+# -----------------------------
+# 그래프 4 이후 추가 영역
+# -----------------------------
+st.divider()
+st.header("4. 다음 그래프")
 st.info("앞으로 새로운 시간 관련 그래프를 이 구역에 추가할 수 있습니다.")
