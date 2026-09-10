@@ -88,12 +88,68 @@ st.plotly_chart(fig, use_container_width=True)
 st.markdown("**이 그래프로 알 수 있는 것:** 영화가 날짜에 따라 하루 동안 동원한 관객 수가 어떻게 변하는지 알 수 있습니다.")
 
 # -----------------------------
-# 앞으로 추가할 그래프 영역
+# 그래프 2: 기간 내 일관객 합계가 가장 큰 5편
 # -----------------------------
 st.divider()
-st.header("2. 다음 그래프")
-st.info("앞으로 시간에 따른 다른 영화 데이터 그래프를 이 구역에 추가할 수 있습니다.")
+st.header("2. 일관객 합계가 가장 큰 영화 5편")
 
+# 영화별 전체 기간 일관객 합계 계산 후 상위 5편 선정
+top5_movies = (
+    df.groupby("영화명", as_index=False)["일관객"]
+    .sum()
+    .sort_values("일관객", ascending=False)
+    .head(5)["영화명"]
+    .tolist()
+)
+
+top5_df = (
+    df[df["영화명"].isin(top5_movies)]
+    .groupby(["날짜", "영화명"], as_index=False)["일관객"]
+    .sum()
+    .sort_values(["날짜", "영화명"])
+)
+
+fig2 = px.line(
+    top5_df,
+    x="날짜",
+    y="일관객",
+    color="영화명",
+    markers=True,
+    title="일관객 합계가 가장 큰 5편의 날짜별 일관객 변화",
+    labels={
+        "날짜": "날짜",
+        "일관객": "일관객 수",
+        "영화명": "영화"
+    },
+    hover_data={
+        "날짜": "|%Y-%m-%d",
+        "영화명": True,
+        "일관객": ":,"
+    }
+)
+
+fig2.update_traces(
+    hovertemplate="영화: %{fullData.name}<br>날짜: %{x|%Y-%m-%d}<br>관객수: %{y:,}명<extra></extra>"
+)
+
+fig2.update_layout(
+    hovermode="x unified",
+    xaxis_title="날짜",
+    yaxis_title="일관객 수(명)",
+    legend_title="영화",
+    legend=dict(
+        itemclick="toggle",
+        itemdoubleclick="toggleothers"
+    )
+)
+
+st.plotly_chart(fig2, use_container_width=True)
+
+st.markdown("**이 그래프로 알 수 있는 것:** 이 기간 동안 일관객 합계가 가장 큰 5편의 날짜별 관객 수 변화와 흥행 추이를 비교할 수 있습니다.")
+
+# -----------------------------
+# 그래프 3 이후 추가 영역
+# -----------------------------
 st.divider()
 st.header("3. 다음 그래프")
-st.info("앞으로 새로운 그래프를 이 구역에 추가할 수 있습니다.")
+st.info("앞으로 새로운 시간 관련 그래프를 이 구역에 추가할 수 있습니다.")
